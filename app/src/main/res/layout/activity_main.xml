@@ -14,6 +14,7 @@
         android:padding="16dp">
 
         <EditText
+            android:id="@+id/editTextFileName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="36dp"
@@ -30,6 +31,7 @@
             android:layout_marginTop="6dp">
 
             <Button
+                android:id="@+id/recordButton"
                 style="@style/Theme.MRecorder.Button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -37,6 +39,7 @@
                 android:text="record" />
 
             <Button
+                android:id="@+id/playButton"
                 style="@style/Theme.MRecorder.Button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -45,6 +48,7 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/openFileButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="84dp"
