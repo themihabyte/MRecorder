@@ -18,6 +18,7 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Hello
     private static final String LOG_TAG = "MainActivity";
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
