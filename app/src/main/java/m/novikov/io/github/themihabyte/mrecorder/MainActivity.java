@@ -24,11 +24,12 @@ public class MainActivity extends AppCompatActivity {
     private String filename = null;
 
     private Button recordButton = null;
-    private boolean mStartRecording = true;
+    private boolean mStartRecording = true; // To start recording
     private MediaRecorder mediaRecorder = null;
 
     private Button playButton = null;
     private MediaPlayer mediaPlayer = null;
+    private boolean mStartPlaying = true; // To start playing
 
     private Button openFileButton = null;
 
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 onRecord(mStartRecording);
                 // If recording might be started
                 if (mStartRecording) recordButton.setText("stop recording");
-                // If recording might be finished
+                    // If recording might be finished
                 else recordButton.setText("record");
 
                 mStartRecording = !mStartRecording;
@@ -60,6 +61,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         playButton = findViewById(R.id.playButton); // Finding playButton in layout
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (filename == null) return;
+                onPlay(mStartPlaying);
+                if (mStartPlaying) playButton.setText("stop");
+                else playButton.setText("play");
+
+                mStartPlaying = !mStartPlaying;
+            }
+        });
 
         openFileButton = findViewById(R.id.openFileButton); // Finding openFileButton in layout
     }
@@ -92,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 mediaRecorder.prepare();
             } catch (IOException e) {
-                Log.e(LOG_TAG, "prepare() failed");
+                Log.e(LOG_TAG, "mediaRecorder.prepare() failed");
             }
 
             mediaRecorder.start();
@@ -101,6 +113,54 @@ public class MainActivity extends AppCompatActivity {
             mediaRecorder.stop();
             mediaRecorder.release();
             mediaRecorder = null;
+        }
+    }
+
+    private void onPlay(boolean start) {
+        if (start) {
+            mediaPlayer = new MediaPlayer();
+            try {
+                mediaPlayer.setDataSource(filename);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "mediaPlayer.setDataSource() failed");
+            }
+
+            try {
+                mediaPlayer.prepare();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "mediaPlayer.prepare() failed");
+            }
+            mediaPlayer.start();
+
+            // Set listener for ending audio
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    if (!mediaPlayer.isPlaying()) {
+                        mediaPlayer.release();
+                        mediaPlayer = null;
+                        playButton.setText("play");
+                        mStartPlaying = true;
+                    }
+                }
+            });
+        } else {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mediaRecorder != null) {
+            mediaRecorder.release();
+            mediaRecorder = null;
+        }
+
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
         }
     }
 }
