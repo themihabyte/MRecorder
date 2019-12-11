@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -74,6 +75,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         openFileButton = findViewById(R.id.openFileButton); // Finding openFileButton in layout
+        openFileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, OpenActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
