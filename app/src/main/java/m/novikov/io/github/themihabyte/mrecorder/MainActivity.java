@@ -1,6 +1,7 @@
 package m.novikov.io.github.themihabyte.mrecorder;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -38,12 +39,16 @@ public class MainActivity extends AppCompatActivity {
     private boolean permissionToRecordAccepted = false;
     private String[] permissions = {Manifest.permission.RECORD_AUDIO};
 
+    EditText editText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+
+        editText = findViewById(R.id.editTextFileName); // Getting name of recording from editText
 
         recordButton = findViewById(R.id.recordButton); // Find recording button in layout
 
@@ -79,9 +84,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, OpenActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 1);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == 1) {
+            switch (requestCode) {
+                case 1:
+                    String fName = data.getStringExtra("filename");
+                    editText.setText(fName);
+                    filename = getExternalCacheDir().getAbsolutePath() + "/" + fName;
+
+            }
+        }
     }
 
     @Override
@@ -99,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void onRecord(boolean start) {
         if (start) {
-            EditText editText = findViewById(R.id.editTextFileName); // Getting name of recording from editText
+
             filename = getExternalCacheDir().getAbsolutePath() + "/" +
                     editText.getText().toString() + ".3gp"; // Setting filename
 
