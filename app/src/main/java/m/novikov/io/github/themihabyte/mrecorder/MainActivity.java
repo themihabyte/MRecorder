@@ -4,12 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -21,9 +23,15 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "MainActivity";
-    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private static final int REQUEST_PERMISSIONS = 200;
+    private static final int CAPTURE_SIZE = 256;
 
     private String filename = null;
+
+    EditText editText;
+
+    private Visualizer visualizer;
+    private WaveFormView waveFormView;
 
     private Button recordButton = null;
     private boolean mStartRecording = true; // To start recording
@@ -37,20 +45,35 @@ public class MainActivity extends AppCompatActivity {
 
     // Request permission for recording audio
     private boolean permissionToRecordAccepted = false;
-    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
-
-    EditText editText;
+    private boolean permissionToModifyAudio = false;
+    private String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.MODIFY_AUDIO_SETTINGS};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+//        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+
+        for (int i = 0; i < permissions.length; i++) {
+            if (ContextCompat.checkSelfPermission(this, permissions[i])
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSIONS);
+            }
+        }
 
         editText = findViewById(R.id.editTextFileName); // Getting name of recording from editText
 
         recordButton = findViewById(R.id.recordButton); // Find recording button in layout
+
+        /*TODO:
+         *  colors in visualizer?
+         * */
+
+        waveFormView = findViewById(R.id.waveForm);
+
+        RendererFactory rendererFactory = new RendererFactory();
+        waveFormView.setRenderer(rendererFactory.creteCurveWaveFormRenderer(R.color.colorPrimaryDark, R.color.colorBackground));
 
         // Set Listener to recoding button as InnerClass
         recordButton.setOnClickListener(new View.OnClickListener() {
@@ -90,7 +113,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        if (visualizer != null) {
+            visualizer.setEnabled(false);
+            visualizer.release();
+            visualizer.setDataCaptureListener(null, 0, false, false);
+        }
+
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mediaRecorder != null) {
+            mediaRecorder.release();
+            mediaRecorder = null;
+        }
+
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mediaPlayer != null) startVisualizer();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 1) {
             switch (requestCode) {
                 case 1:
@@ -102,17 +157,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case REQUEST_RECORD_AUDIO_PERMISSION:
+            case REQUEST_PERMISSIONS:
                 // Pop request for audio-recording permission
                 permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                permissionToModifyAudio = grantResults[1] == PackageManager.PERMISSION_GRANTED;
                 break;
+
         }
 
-        if (!permissionToRecordAccepted) finish(); // Finish app if permission isn`t given
+        if (!permissionToRecordAccepted && !permissionToModifyAudio) finish(); // Finish app if permission isn`t given
     }
 
     private void onRecord(boolean start) {
@@ -156,7 +215,10 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.e(LOG_TAG, "mediaPlayer.prepare() failed");
             }
+
+            startVisualizer();
             mediaPlayer.start();
+
 
             // Set listener for ending audio
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -176,17 +238,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mediaRecorder != null) {
-            mediaRecorder.release();
-            mediaRecorder = null;
-        }
+    private void startVisualizer() {
+        visualizer = new Visualizer(0);
+        visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+            @Override
+            public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                if (waveFormView != null) waveFormView.setWaveForm(waveform);
+            }
 
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
+            @Override
+            public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                //TODO
+            }
+        }, Visualizer.getMaxCaptureRate(), true, false);
+
+        visualizer.setCaptureSize(CAPTURE_SIZE);
+        visualizer.setEnabled(true);
     }
 }
