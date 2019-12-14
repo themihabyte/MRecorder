@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         waveFormView = findViewById(R.id.waveForm);
 
         RendererFactory rendererFactory = new RendererFactory();
-        waveFormView.setRenderer(rendererFactory.createCurveWaveFormRenderer(getResources().getColor(R.color.colorPrimaryDark),Color.TRANSPARENT));
+        waveFormView.setRenderer(rendererFactory.createCurveWaveFormRenderer(getResources().getColor(R.color.colorPrimaryDark, null), Color.TRANSPARENT));
 
         // Set Listener to recoding button as InnerClass
         recordButton.setOnClickListener(new View.OnClickListener() {
@@ -159,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -172,7 +171,8 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        if (!permissionToRecordAccepted && !permissionToModifyAudio) finish(); // Finish app if permission isn`t given
+        if (!permissionToRecordAccepted && !permissionToModifyAudio)
+            finish(); // Finish app if permission isn`t given
     }
 
     private void onRecord(boolean start) {
