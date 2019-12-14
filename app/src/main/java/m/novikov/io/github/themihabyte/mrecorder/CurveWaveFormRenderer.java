@@ -15,7 +15,7 @@ public class CurveWaveFormRenderer implements WaveFormRenderer {
     private final Paint mForegroundPaint;
     private final Path mWaveFormPath;
 
-    static CurveWaveFormRenderer newInstance(int backgroundColor, int foregroundColor) {
+    static CurveWaveFormRenderer newInstance(@ColorInt int backgroundColor, @ColorInt int foregroundColor) {
         Paint paint = new Paint();
         paint.setColor(foregroundColor);
         paint.setAntiAlias(true);
@@ -25,7 +25,7 @@ public class CurveWaveFormRenderer implements WaveFormRenderer {
         return new CurveWaveFormRenderer(backgroundColor, paint, waveFormPath);
     }
 
-    CurveWaveFormRenderer(int mBackgroundColor, Paint mForegroundPaint, Path mWaveFormPath) {
+    private CurveWaveFormRenderer(@ColorInt int mBackgroundColor, Paint mForegroundPaint, Path mWaveFormPath) {
         this.mBackgroundColor = mBackgroundColor;
         this.mForegroundPaint = mForegroundPaint;
         this.mWaveFormPath = mWaveFormPath;
@@ -54,13 +54,14 @@ public class CurveWaveFormRenderer implements WaveFormRenderer {
 
         mWaveFormPath.moveTo(0, halfHeight);
         for (int i = 1; i < waveform.length; i++) {
-            float yPosition = waveform[i] > 0 ? height - (yIncrement * waveform[i]) :
-                    -(yIncrement * waveform[i]);
-//            if (yPosition > 0) {
-//                yPosition = height - (yIncrement * waveform[i]);
-//            } else {
-//                yPosition = -(yIncrement * waveform[i]);
-//            }
+            float yPosition = waveform[i];
+//                   > 0 ? height - (yIncrement * waveform[i]) :
+//                    -(yIncrement * waveform[i]);
+            if (yPosition > 0) {
+                yPosition = height - (yIncrement * waveform[i]);
+            } else {
+                yPosition = -(yIncrement * waveform[i]);
+            }
             mWaveFormPath.lineTo(xIncrement * i, yPosition);
         }
         mWaveFormPath.lineTo(width, halfHeight);
