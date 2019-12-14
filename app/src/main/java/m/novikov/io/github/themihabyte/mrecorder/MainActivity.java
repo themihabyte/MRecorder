@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.media.audiofx.Visualizer;
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         waveFormView = findViewById(R.id.waveForm);
 
         RendererFactory rendererFactory = new RendererFactory();
-        waveFormView.setRenderer(rendererFactory.creteCurveWaveFormRenderer(R.color.colorPrimaryDark, R.color.colorBackground));
+        waveFormView.setRenderer(rendererFactory.createCurveWaveFormRenderer(getResources().getColor(R.color.colorPrimaryDark),Color.TRANSPARENT));
 
         // Set Listener to recoding button as InnerClass
         recordButton.setOnClickListener(new View.OnClickListener() {
@@ -239,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startVisualizer() {
-        visualizer = new Visualizer(0);
+        visualizer = new Visualizer(mediaPlayer.getAudioSessionId());
         visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
             @Override
             public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
