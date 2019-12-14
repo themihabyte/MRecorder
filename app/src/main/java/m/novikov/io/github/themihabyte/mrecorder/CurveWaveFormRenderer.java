@@ -7,7 +7,7 @@ import android.graphics.Path;
 import androidx.annotation.ColorInt;
 
 public class CurveWaveFormRenderer implements WaveFormRenderer {
-    private static final int Y_FACTOR = 0xFF;
+    private static final int Y_FACTOR = 255;
     private static final float HALF_FACTOR = 0.5f;
 
     @ColorInt
@@ -20,6 +20,7 @@ public class CurveWaveFormRenderer implements WaveFormRenderer {
         paint.setColor(foregroundColor);
         paint.setAntiAlias(true);
         paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(5);
         Path waveFormPath = new Path();
 
         return new CurveWaveFormRenderer(backgroundColor, paint, waveFormPath);
@@ -55,8 +56,7 @@ public class CurveWaveFormRenderer implements WaveFormRenderer {
         mWaveFormPath.moveTo(0, halfHeight);
         for (int i = 1; i < waveform.length; i++) {
             float yPosition = waveform[i];
-//                   > 0 ? height - (yIncrement * waveform[i]) :
-//                    -(yIncrement * waveform[i]);
+
             if (yPosition > 0) {
                 yPosition = height - (yIncrement * waveform[i]);
             } else {
